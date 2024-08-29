@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sequelize from './config/database.js';
+import authRoutes from './routes/authRoutes.js';
 
 // Determine __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -22,5 +23,18 @@ app.get('/test-db', async (req, res) => {
         res.status(500).send('Error connecting to database');
     }
 });
+
+const syncDatabase = async () => {
+    try {
+        await sequelize.sync({ force: false });
+        console.log('Database synced successfully');
+    } catch (error) {
+        console.log('Error syncing database', error);
+    }
+};
+
+syncDatabase();
+
+app.use('/auth', authRoutes);
 
 export default app;
