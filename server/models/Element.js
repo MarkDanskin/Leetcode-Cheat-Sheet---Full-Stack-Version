@@ -11,9 +11,20 @@ const Element = sequelize.define(
             primaryKey: true,
             allowNull: false,
         },
-        name: { type: DataTypes.STRING, allowNull: false, unique: true },
-        description: { type: DataTypes.TEXT, allowNull: false },
-        language: { type: DataTypes.STRING, allowNull: false },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                len: [1, 255], // Name Length Limit
+            },
+        },
+        description: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+        },
     },
     { timestamps: true }
 );
+
+export default Element;
