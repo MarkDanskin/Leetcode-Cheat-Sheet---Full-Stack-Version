@@ -40,8 +40,8 @@ const User = sequelize.define(
             allowNull: false,
             validate: {
                 is: {
-                    args: /^[a-zA-Z0-9!@#$%^&*()]+$/, // Regular expression to include letters, numbers, and symbols
-                    msg: 'Username can only contain letters, numbers, and the special characters !@#$%^&*()',
+                    args: /^[\x21-\x7E]+$/, // Regular expression to include only characters within the ASCII range 33 (!) to 126 (~)
+                    msg: 'Username can only contain letters, numbers, and basic symbols',
                 },
                 len: [8, 255], // Password Length Limit
             },

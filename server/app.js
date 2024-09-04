@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sequelize from './config/database.js';
-import authRoutes from './routes/authRoutes.js';
+import accountRoutes from './routes/accountRoutes.js';
 
 // Determine __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -35,6 +35,6 @@ const syncDatabase = async () => {
 
 syncDatabase();
 
-app.use('/auth', authRoutes);
+app.use('/account', accountRoutes);
 
 export default app;
