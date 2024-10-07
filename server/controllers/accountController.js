@@ -1,5 +1,8 @@
 import User from '../models/User.js';
+import Category from '../models/Category.js';
 import Element from '../models/element.js';
+import Snippet from '../models/Snippet.js';
+import ElementGroup from '../models/ElementGroup.js';
 import { generateToken, verifyPassword, decodeToken, verifyToken, authorizeAdmin } from '../utils/authUtils.js';
 import { validateEmail, validatePassword, validateUsername } from '../utils/validatorUtils.js';
 
@@ -42,34 +45,74 @@ export const login = async (req, res, next) => {
     }
 };
 
-// Fetch User Controller
+// Fetch user by ID (authenticated)
 export const getUser = async (req, res, next) => {
+    const { id } = req.params; // Assuming the ID is passed in the route parameters
     const user = req.user;
+
     try {
+        // Check if the requesting user is the same as the requested user or if they are an admin
+        if (user.id !== id && user.role !== 'admin') {
+            return res.status(403).json({ error: "You are not authorized to access this user's information." });
+        }
+
+        // Fetch the user by ID
+        const requestedUser = await User.findByPk(id); // Ensure you import your User model
+
+        if (!requestedUser) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
         const userObj = {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            accountCreated: user.createdAt,
+            id: requestedUser.id,
+            username: requestedUser.username,
+            email: requestedUser.email,
+            role: requestedUser.role,
+            accountCreated: requestedUser.createdAt,
         };
-        res.status(200).json({ userObj });
+
+        res.status(200).json({ user: userObj });
     } catch (error) {
         res.status(400).json({ error: error.message });
+    }
+};
+
+// Admin: Get all users
+export const getAllUsers = async (req, res, next) => {
+    if (req.user.role !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+    try {
+        const users = await User.findAll({
+            attributes: ['id', 'username', 'email', 'role', 'createdAt'],
+        });
+        res.status(200).json({ users });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
 // Change Password Controller
 export const updateUserPassword = async (req, res, next) => {
     const user = req.user;
-    const id = user.id;
+    const { id } = req.params; // Extract user ID from the request parameters
     const password = req.body.password;
     const newPassword = req.body.newPassword;
+
     try {
-        validatePassword(newPassword);
-        if (!user || !(await verifyPassword(password, user.password))) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+        // Check if the user is updating their own password or is an admin
+        if (user.id !== id && user.role !== 'admin') {
+            return res.status(403).json({ message: "You are not authorized to update this user's password." });
         }
-        await User.update({ password: newPassword }, { where: { id: id } });
+
+        validatePassword(newPassword);
+
+        // Verify the current password if the user is updating their own password
+        if (user.id === id && !(await verifyPassword(password, user.password))) {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        await User.update({ password: newPassword }, { where: { id } });
         res.status(200).json({ message: 'Password Changed Successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -79,40 +122,22 @@ export const updateUserPassword = async (req, res, next) => {
 // Delete User Controller
 export const deleteUserAccount = async (req, res, next) => {
     const user = req.user;
-    const id = user.id;
+    const { id } = req.params; // Extract user ID from the request parameters
     const password = req.body.password;
+
     try {
-        if (!user || !(await verifyPassword(password, user.password))) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+        // Check if the user is deleting their own account or is an admin
+        if (user.id !== id && user.role !== 'admin') {
+            return res.status(403).json({ message: "You are not authorized to delete this user's account." });
         }
-        await User.destroy({ where: { id: id } });
+
+        // Verify the password if the user is deleting their own account
+        if (user.id === id && !(await verifyPassword(password, user.password))) {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        await User.destroy({ where: { id } });
         res.status(200).json({ message: 'Account Deleted Successfully' });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
-
-// Get Elements Controller
-export const getElements = async (req, res, next) => {
-    try {
-        const elements = await Element.findAll();
-        res.status(200).json({ elements });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
-
-// Create Element
-export const createElement = async (req, res, next) => {
-    const name = req.body.name;
-    const description = req.body.description;
-    try {
-        const elementInfo = {
-            name: name,
-            description: description,
-        };
-        const element = await Element.create(elementInfo);
-        res.status(201).json({ element });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

@@ -2,7 +2,13 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sequelize from './config/database.js';
+import './models/Relationships.js';
+
 import accountRoutes from './routes/accountRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import elementRoutes from './routes/elementRoutes.js';
+import snippetRoutes from './routes/snippetRoutes.js';
+import elementGroupRoutes from './routes/elementGroupRoutes.js';
 
 // Determine __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +32,11 @@ app.get('/test-db', async (req, res) => {
 
 const syncDatabase = async () => {
     try {
+        // await sequelize.getQueryInterface().dropTable('ElementGroupElement');
+        // await sequelize.getQueryInterface().dropTable('ElementCategory');
+        // await sequelize.getQueryInterface().dropTable('Logs');
+        // await sequelize.getQueryInterface().dropTable('Users');
+
         await sequelize.sync({ force: false });
         console.log('Database synced successfully');
     } catch (error) {
@@ -36,5 +47,9 @@ const syncDatabase = async () => {
 syncDatabase();
 
 app.use('/account', accountRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/elements', elementRoutes);
+app.use('/snippets', snippetRoutes);
+app.use('/elementGroup', elementGroupRoutes);
 
 export default app;
