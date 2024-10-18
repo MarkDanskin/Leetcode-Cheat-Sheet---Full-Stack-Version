@@ -1,0 +1,12 @@
+{
+    "name": "lc_cheatsheet",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "concurrently \"npm run server\" \"npm run client\"",
+        "server": "cd server && node --watch server",
+        "client": "cd client && npm start"
+    },
+    "dependencies": {
+        "concurrently": "^6.5.1"
+    }
+}

@@ -3,6 +3,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import sequelize from './config/database.js';
 import './models/Relationships.js';
+import cors from 'cors';
+import passport from 'passport';
+import session from 'express-session';
+import authRoutes from './routes/authRoutes.js';
 
 import accountRoutes from './routes/accountRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -10,16 +14,27 @@ import elementRoutes from './routes/elementRoutes.js';
 import snippetRoutes from './routes/snippetRoutes.js';
 import elementGroupRoutes from './routes/elementGroupRoutes.js';
 
-// Determine __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
-//processes any incoming request that contains a JSON body and makes the parsed data available in req.body
+app.use(cors());
+
 app.use(express.json());
-// Used to parse data from submitted HTML forms and add to req.body
+
 app.use(express.urlencoded({ extended: false }));
+
+app.use(
+    session({
+        secret: 'your-session-secret',
+        resave: false,
+        saveUninitialized: true,
+    })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.get('/test-db', async (req, res) => {
     try {
@@ -46,10 +61,11 @@ const syncDatabase = async () => {
 
 syncDatabase();
 
-app.use('/account', accountRoutes);
-app.use('/categories', categoryRoutes);
-app.use('/elements', elementRoutes);
-app.use('/snippets', snippetRoutes);
-app.use('/elementGroup', elementGroupRoutes);
+app.use('/api/account', accountRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/elements', elementRoutes);
+app.use('/api/snippets', snippetRoutes);
+app.use('/api/elementGroup', elementGroupRoutes);
+app.use('/auth', authRoutes);
 
 export default app;

@@ -1,13 +1,12 @@
 import express from 'express';
 import { createCategory, getCategories, updateCategory, deleteCategory } from '../controllers/categoryController.js';
-import authenticate from '../middleware/authenticationMiddleware.js'; // Admin access required
+import authenticate from '../middleware/authenticationMiddleware.js';
 
 const router = express.Router();
 
-// Admin-only category operations
-router.post('/create', createCategory); // Create Category
-router.get('/', getCategories); // Get All Categories
-router.put('/:id', updateCategory); // Update Category
-router.delete('/:id', deleteCategory); // Delete Category
+router.post('/create', authenticate, createCategory);
+router.get('/', authenticate, getCategories);
+router.put('/:id', authenticate, updateCategory);
+router.delete('/:id', authenticate, deleteCategory);
 
 export default router;

@@ -7,7 +7,7 @@ const User = sequelize.define(
     {
         id: {
             type: DataTypes.INTEGER,
-            autoIncrement: true, // Starts at 1
+            autoIncrement: true,
             unique: true,
             primaryKey: true,
             allowNull: false,
@@ -23,7 +23,7 @@ const User = sequelize.define(
             allowNull: false,
             validate: {
                 isEmail: true,
-                len: [1, 255], // Email Length Limit
+                len: [1, 255],
             },
         },
         username: {
@@ -32,18 +32,18 @@ const User = sequelize.define(
             allowNull: false,
             validate: {
                 isAlphanumeric: true,
-                len: [2, 20], // Username Length Limit
+                len: [2, 20],
             },
         },
         password: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
             validate: {
                 is: {
-                    args: /^[\x21-\x7E]+$/, // Regular expression to include only characters within the ASCII range 33 (!) to 126 (~)
+                    args: /^[\x21-\x7E]+$/,
                     msg: 'Username can only contain letters, numbers, and basic symbols',
                 },
-                len: [8, 255], // Password Length Limit
+                len: [8, 255],
             },
         },
     },
@@ -51,10 +51,12 @@ const User = sequelize.define(
         timestamps: true,
         hooks: {
             beforeCreate: async (user) => {
-                user.password = await bcrypt.hash(user.password, 10);
+                if (user.password) {
+                    user.password = await bcrypt.hash(user.password, 10);
+                }
             },
             beforeUpdate: async (user) => {
-                if (user.changed('password')) {
+                if (user.changed('password') && user.password) {
                     user.password = await bcrypt.hash(user.password, 10);
                 }
             },

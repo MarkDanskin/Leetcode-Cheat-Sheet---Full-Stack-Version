@@ -4,8 +4,8 @@ import authenticate from '../middleware/authenticationMiddleware.js';
 
 const router = express.Router();
 
-router.post('/create', createSnippet); // Create Snippet
-router.put('/:id', updateSnippet); // Update Snippet
-router.delete('/:id', deleteSnippet); // Delete Snippet
+router.post('/create', authenticate, createSnippet);
+router.put('/:id', authenticate, updateSnippet);
+router.delete('/:id', authenticate, deleteSnippet);
 
 export default router;

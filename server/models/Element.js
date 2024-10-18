@@ -6,7 +6,7 @@ const Element = sequelize.define(
     {
         id: {
             type: DataTypes.INTEGER,
-            autoIncrement: true, // Starts at 1
+            autoIncrement: true,
             unique: true,
             primaryKey: true,
             allowNull: false,
@@ -16,7 +16,7 @@ const Element = sequelize.define(
             allowNull: false,
             unique: true,
             validate: {
-                len: [1, 255], // Name Length Limit
+                len: [1, 255],
             },
         },
         description: {

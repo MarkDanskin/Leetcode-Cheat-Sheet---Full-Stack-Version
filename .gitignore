@@ -1,2 +1,19 @@
 node_modules
 .env
+
+# React Client
+/client/node_modules
+/client/.pnp
+/client/.pnp.js
+/client/coverage
+/client/build
+/client/.env.local
+/client/.env.development.local
+/client/.env.test.local
+/client/.env.production.local
+
+# Misc (for both server and client)
+/.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

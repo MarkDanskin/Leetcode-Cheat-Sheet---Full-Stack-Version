@@ -1,20 +1,13 @@
 import User from '../models/User.js';
 import Category from '../models/Category.js';
-import Element from '../models/element.js';
+import Element from '../models/Element.js';
 import Snippet from '../models/Snippet.js';
 import ElementGroup from '../models/ElementGroup.js';
 import { Op } from 'sequelize';
-import { generateToken, verifyPassword, decodeToken, verifyToken, authorizeAdmin } from '../utils/authUtils.js';
-import { validateEmail, validatePassword, validateUsername } from '../utils/validatorUtils.js';
 
-// Create Element Controller
 export const createElement = async (req, res) => {
     const { name, description, categoryIds = [] } = req.body;
-    // const userId = req.user.id;
-
-    // Testing ******************************************************
-    const userId = req.body.userid; // Used for testing purposes ***
-    // Testing ******************************************************
+    const userId = req.user.id;
 
     try {
         const element = await Element.create({ name, description, userId });
@@ -30,35 +23,28 @@ export const createElement = async (req, res) => {
 };
 
 export const getElements = async (req, res) => {
-    // Testing ******************************************************
-    const userId = req.body.userid; // Used for testing purposes ***
-    // Testing ******************************************************
+    const userId = req.user ? req.user.id : null;
 
     try {
-        // const userId = req.user ? req.user.id : null;
         const elements = await Element.findAll({
             where: {
-                [Op.or]: [
-                    userId ? { userId: userId } : null, // Match the current user's ID
-                    { '$User.role$': 'admin' }, // Check if the user role is admin
-                ],
+                [Op.or]: [userId ? { userId: userId } : null, { '$User.role$': 'admin' }],
             },
             include: [
                 {
                     model: Category,
                     through: { attributes: [] },
                     required: false,
-                }, // Include categories
-                { model: Snippet }, // Include snippets
-                { model: User }, // Include User to access the role
+                },
+                { model: Snippet },
+                { model: User },
                 {
-                    model: ElementGroup, // Include the element groups
-                    through: { attributes: [] }, // Exclude join table attributes
+                    model: ElementGroup,
+                    through: { attributes: [] },
                 },
             ],
         });
 
-        // Check if any elements were found
         if (!elements.length) {
             return res.status(404).json({ message: 'No elements found for this user.' });
         }
@@ -71,26 +57,15 @@ export const getElements = async (req, res) => {
 
 export const getElementById = async (req, res) => {
     const { id } = req.params;
-    // const userId = req.user.id; // Current user's ID
-
-    // Testing ******************************************************
-    const userId = req.body.userid; // Used for testing purposes ***
-    // Testing ******************************************************
+    const userId = req.user.id;
 
     try {
         const element = await Element.findOne({
             where: {
-                id, // Match the element ID
-                [Op.or]: [
-                    { userId: userId }, // Match the current user's ID
-                    { '$User.role$': 'admin' }, // Match if created by an admin user
-                ],
+                id,
+                [Op.or]: [{ userId: userId }, { '$User.role$': 'admin' }],
             },
-            include: [
-                { model: Category }, // Include category
-                { model: Snippet }, // Include snippets
-                { model: User }, // Include User to access the role
-            ],
+            include: [{ model: Category }, { model: Snippet }, { model: User }],
         });
 
         if (!element) return res.status(404).json({ message: 'Element not found' });
@@ -101,37 +76,29 @@ export const getElementById = async (req, res) => {
     }
 };
 
-// Get Elements by Group ID
 export const getElementsByGroup = async (req, res) => {
     const { id: groupId } = req.params;
-    // const userId = req.user.id; // Current user's ID
-
-    // Testing ******************************************************
-    const userId = req.body.userid; // Used for testing purposes ***
-    // Testing ******************************************************
+    const userId = req.user.id;
 
     try {
         const group = await ElementGroup.findOne({
-            where: { id: groupId, userId }, // Check if the group belongs to the user
+            where: { id: groupId, userId },
         });
         if (!group) return res.status(404).json({ message: 'Element group not found' });
 
         const elements = await Element.findAll({
             where: {
-                [Op.or]: [
-                    { userId: userId }, // Match the current user's ID
-                    { '$User.role$': 'admin' }, // Check if the user role is admin
-                ],
+                [Op.or]: [{ userId: userId }, { '$User.role$': 'admin' }],
             },
             include: [
                 {
                     model: ElementGroup,
-                    where: { id: groupId }, // Ensure the elements are associated with the specified group
-                    through: { attributes: [] }, // Exclude join table attributes
+                    where: { id: groupId },
+                    through: { attributes: [] },
                 },
-                { model: Category }, // Include categories
-                { model: Snippet }, // Include snippets
-                { model: User, attributes: ['id', 'role'] }, // Include User to access the role
+                { model: Category },
+                { model: Snippet },
+                { model: User, attributes: ['id', 'role'] },
             ],
         });
 
@@ -141,15 +108,10 @@ export const getElementsByGroup = async (req, res) => {
     }
 };
 
-// Update Element
 export const updateElement = async (req, res) => {
     const { id } = req.params;
     const { name, description } = req.body;
-    // const userId = req.user.id;
-
-    // Testing ******************************************************
-    const userId = req.body.userid; // Used for testing purposes ***
-    // Testing ******************************************************
+    const userId = req.user.id;
 
     try {
         const element = await Element.findOne({ where: { id, userId } });
@@ -164,14 +126,9 @@ export const updateElement = async (req, res) => {
     }
 };
 
-// Delete Element
 export const deleteElement = async (req, res) => {
     const { id } = req.params;
-    // const userId = req.user.id;
-
-    // Testing ******************************************************
-    const userId = req.body.userid; // Used for testing purposes ***
-    // Testing ******************************************************
+    const userId = req.user.id;
 
     try {
         const element = await Element.findOne({ where: { id, userId } });

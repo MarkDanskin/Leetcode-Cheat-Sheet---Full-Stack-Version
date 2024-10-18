@@ -4,11 +4,11 @@ import authenticate from '../middleware/authenticationMiddleware.js';
 
 const router = express.Router();
 
-router.post('/create', createElement); // Create Element
-router.get('/', getElements); // Get All Elements
-router.get('/:id', getElementById); // Get An Element By ID
-router.get('/group/:id', getElementsByGroup); // Get All Elements Belonging To A Group
-router.put('/:id', updateElement); // Update Element
-router.delete('/:id', deleteElement); // Delete Element
+router.post('/create', authenticate, createElement);
+router.get('/', getElements);
+router.get('/:id', authenticate, getElementById);
+router.get('/group/:id', authenticate, getElementsByGroup);
+router.put('/:id', authenticate, updateElement);
+router.delete('/:id', authenticate, deleteElement);
 
 export default router;
